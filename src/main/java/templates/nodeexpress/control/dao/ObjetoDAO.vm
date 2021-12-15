@@ -1,0 +1,148 @@
+var BaseDAO = require("./BaseDAO");
+var { MAX_LENGHT_PAGE } = require("../util/constantes");
+
+const NOME_TABELA = "${tabela.getNomeMinusculo()}";
+const CAMPOS = `${tabela.getColunasSQL()}`;
+const SELECT = `SELECT ${CAMPOS} FROM ${NOME_TABELA}`;
+const SELECT_COUNT = `SELECT COUNT(*) AS quantidade FROM ${NOME_TABELA}`;
+const INSERT = `${tabela.getInsertSQL()}`;
+const UPDATE = `${tabela.getUpdateSQL()}`;
+const DELETE = `DELETE FROM ${NOME_TABELA} WHERE id = ? `;
+
+
+/**
+ * Recupera a lista de ${tabela.getNome()} semelhantes ao informado
+ * @param {JSON} ${tabela.getNomeMinusculo()} ${tabela.getNome()} para filtro
+ * @returns {Promise} Promise [resolve: Lista de ${tabela.getNome()}]
+ */
+function listar(${tabela.getNomeMinusculo()}, pagina) {
+    return new Promise(async (resolve, reject) => {
+    	var results;
+        var sql = SELECT;
+        var parametros = [];
+        
+        ${tabela.getFiltrosColunasLista($tabela)}
+        
+        sql = sql.concat(' ORDER BY id DESC')
+
+        ${util.getPaginacao()}
+        
+        try {
+            results = await BaseDAO.poolDeConexao.query(sql, parametros);
+	        resolve(results);
+        } catch(error) {
+            reject(error.sqlMessage);
+        }
+    });
+}
+
+/**
+ * Recupera a quantidade total de registros da pesquisa atual
+ * @param {JSON} ${tabela.getNomeMinusculo()} ${tabela.getNome()} para filtro
+ * @returns {Promise} Promise [resolve: Quantidade de ${tabela.getNome()}]
+ */
+function recuperarQuantidade(${tabela.getNomeMinusculo()}) {
+    return new Promise(async (resolve, reject) => {
+    	var results;
+        var sql = SELECT_COUNT;
+        var parametros = [];
+        
+        ${tabela.getFiltrosColunasLista($tabela)}
+        
+        try {
+            results = await BaseDAO.poolDeConexao.query(sql, parametros);
+	        resolve(results[0].quantidade);
+        } catch(error) {
+            reject(error.sqlMessage);
+        }
+    });
+}
+
+/**
+ * Recupera um ${tabela.getNome()} com id informado
+ * @param {Integer} id  Id do ${tabela.getNome()} com id
+ * @returns {Promise} Promise [resolve: ${tabela.getNome()}]
+ */
+function recuperar(id) {
+    return new Promise(async (resolve, reject) => {
+        var results;
+        var sql = SELECT;
+        
+        sql = BaseDAO.incluirClausulaNoWhereAND(sql, " id = ? ");
+
+        try {
+            results = await BaseDAO.poolDeConexao.query(sql, [ id ]);
+            resolve(results[0]);
+        } catch(error) {
+            reject(error.sqlMessage);
+        }
+    });
+}
+
+/**
+ * Insere um novo ${tabela.getNome()}
+ * @param {JSON} ${tabela.getNomeMinusculo()} ${tabela.getNome()} a ser inserido
+ * @returns {Promise} Promise [resolve: ${tabela.getNome()} inserido]
+ */
+function inserir(${tabela.getNomeMinusculo()}) {
+	 return new Promise(async (resolve, reject) => {
+        var results;
+        try {
+        	let parametros = [
+        		${tabela.getParametrosInsert()}
+        	]
+        
+            results = await BaseDAO.poolDeConexao.query(INSERT, parametros);
+            ${tabela.getNomeMinusculo()}.id = results.insertId;
+            resolve(${tabela.getNomeMinusculo()});
+        } catch(error) {
+            reject(error.sqlMessage);
+        }
+    });
+}
+
+/**
+ * Altera um ${tabela.getNome()}
+ * @param {JSON} ${tabela.getNomeMinusculo()} ${tabela.getNome()} a ser alterado
+ * @returns {Promise} Promise [resolve: ${tabela.getNome()} alterado]
+ */
+function alterar(${tabela.getNomeMinusculo()}) {
+	return new Promise(async (resolve, reject) => {
+        try {
+        	let parametros = [
+        		${tabela.getParametrosUpdate()}
+        	]
+        	
+            await BaseDAO.poolDeConexao.query(UPDATE, parametros);
+            resolve(${tabela.getNomeMinusculo()});
+        } catch(error) {
+            reject(error.sqlMessage);
+        }
+    });
+}
+
+/**
+ * Remove um ${tabela.getNome()}
+ * @param {Integer} id Id do ${tabela.getNome()} a ser removido
+ * @returns {Promise} Promise [resolve: Resultado da exclusão]
+ */
+function remover(id) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            await BaseDAO.poolDeConexao.query(DELETE, id);
+            resolve(true);
+        } catch(error) {
+            reject(error.sqlMessage);
+        }
+    });
+}
+
+module.exports = 
+{ 
+    listar,
+    recuperarQuantidade,
+    recuperar,
+    inserir,
+    alterar,
+    remover
+};

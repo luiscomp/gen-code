@@ -1,0 +1,18 @@
+/* JavaFX CSS - Leave this comment until you have at least create one rule which uses -fx-Property */
+.tree-cell, .tree-cell:hover:empty {
+    -fx-background-color: -fx-background ;
+    -fx-background: -fx-control-inner-background ;
+}
+
+.tree-cell:hover {
+    -fx-background-color: #A3A3A3, -fx-background ;
+    -fx-background-insets: 0, 1;
+}
+
+.tree-cell:item {
+    -fx-background: antiquewhite ;
+}
+
+.tree-cell:selected {
+    -fx-background: #335588 ;
+}

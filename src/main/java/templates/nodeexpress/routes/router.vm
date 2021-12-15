@@ -1,0 +1,23 @@
+var express = require("express");
+var router = express.Router();
+var ${tabela.getNome()}Fachada = require("../control/fachada/${tabela.getNome()}Fachada");
+var ${tabela.getNome()} = require("../control/validadores/schemas/${tabela.getNome()}");
+var validator = require("../control/validadores/Validador");
+
+router.post("/listar/:pagina*?", async (req, res, next) => {
+    res.json(await ${tabela.getNome()}Fachada.listar(req.body, req.params.pagina));
+});
+
+router.post("/recuperar/:listasRel*?", validator(${tabela.getNome()}.objectId), async (req, res, next) => {
+    res.json(await ${tabela.getNome()}Fachada.recuperar(req.body.id, req.params.listasRel));
+});
+
+router.post("/gravar", validator(${tabela.getNome()}.gravar), async (req, res, next) => {
+    res.json(await ${tabela.getNome()}Fachada.gravar(req.body));
+});
+
+router.post("/remover", validator(${tabela.getNome()}.objectId), async (req, res, next) => {
+    res.json(await ${tabela.getNome()}Fachada.remover(req.body.id));
+});
+
+module.exports = router;

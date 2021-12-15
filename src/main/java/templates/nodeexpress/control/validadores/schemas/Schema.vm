@@ -1,0 +1,29 @@
+const objectId = {
+    type: "object",
+    required: [ "id" ],
+    properties: {
+        id: { 
+            type: "integer", 
+            minimum: 1
+        }
+    }
+};
+
+const gravar = {
+    type: "object",
+    required: [ ${tabela.getColunasObrigatorias()} ],
+    properties: {
+    	${tabela.getPropriedadesColunas()}
+    },
+    errorMessage: {
+        required: {
+            ${tabela.getErroObrigatoriedadeColunas()}
+        }
+    } 
+}
+
+module.exports =
+{ 
+    objectId,
+    gravar
+};

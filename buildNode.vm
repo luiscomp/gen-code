@@ -1,0 +1,11 @@
+@CHCP 65001 >NUL
+cd /d "${pathProjetoBack}"
+call npm install
+@echo Instalação Backend concluída.
+@echo.
+cd /d "${pathProjetoFront}"
+call npm install
+@echo Instalação Frontend concluída.
+@echo.
+@pause
+exit

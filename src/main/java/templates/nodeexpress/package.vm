@@ -1,0 +1,27 @@
+{
+  "name": "$nomeProjeto",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "nodemon ./bin/www",
+    "production": "pm2 start ./bin/www --name $nomeProjeto"
+  },
+  "dependencies": {
+    "ajv": "^6.5.3",
+    "ajv-errors": "^1.0.0",
+    "body-parser": "^1.18.3",
+    "compression": "^1.7.3",
+    "cookie-parser": "~1.4.3",
+    "cookie-session": "^2.0.0-beta.3",
+    "debug": "~4.0.1",
+    "express": "~4.16.0",
+    "http-errors": "~1.7.1",
+    "log4js": "^3.0.5",
+    "mysql": "^2.16.0",
+    "nodemon": "^1.18.4",
+    "pug": "2.0.3"
+  },
+  "devDependencies": {
+    "pm2": "^3.1.2"
+  }
+}

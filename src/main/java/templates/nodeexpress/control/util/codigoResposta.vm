@@ -1,0 +1,11 @@
+const SUCESSO = '000';
+const FALHA = '001';
+const CREDENCIAIS_INVALIDAS = '002';
+const SESSAO_EXPIRADA = '500';
+
+module.exports = {
+    SUCESSO,
+    FALHA,
+    CREDENCIAIS_INVALIDAS,
+    SESSAO_EXPIRADA
+}

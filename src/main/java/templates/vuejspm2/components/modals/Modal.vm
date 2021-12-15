@@ -1,0 +1,145 @@
+<template>
+    <v-dialog :value="exibir" scrollable persistent width="700">
+        <v-card>
+            <v-card-title class="headline grey lighten-3">
+                Selecionar ${tabela.getNome()}
+            </v-card-title>
+
+            <v-card-text>
+                <v-card>
+                    <v-layout row wrap pl-3 pr-3 pt-2 mb-3>
+                    	${tabela.getBuscaHtmlModalVueFront()}
+                    </v-layout>
+                </v-card>
+
+                <v-data-table
+                    :headers="colunas"
+                    :items="lista"
+                    :search="busca"
+                    v-model="selecionados"
+                    item-key="id"
+                    no-data-text="Sem dados"
+                    hide-actions
+                    :hide-headers="!multiSelecao"
+                    :select-all="multiSelecao"
+                    class="elevation-1">
+
+                    <template slot="headers" slot-scope="props">
+                        <tr>
+                            <th v-if="multiSelecao">
+                                <v-checkbox :input-value="props.all" :indeterminate="props.indeterminate" primary hide-details @click.native="selecionarTodos"></v-checkbox>
+                            </th>
+                            <th v-for="header in props.headers" :key="header.text">
+                                <!-- {{ header.text }} -->
+                            </th>
+                        </tr>
+                    </template>
+
+                    <template slot="items" slot-scope="props">
+                        <tr :active="props.selected" @click="selecionar${tabela.getNome()}(props)" @dblclick="selecionarConfirmar(props)">
+                            <td v-if="multiSelecao" style="width: 80px">
+                                <v-checkbox :input-value="props.selected" primary hide-details></v-checkbox>
+                            </td>
+                            ${tabela.getColunaHtmlModalVueFront()}
+                        </tr>
+                    </template>
+                </v-data-table>
+            </v-card-text>
+
+            <v-divider></v-divider>
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn @click="cancelar">Cancelar</v-btn>
+                <v-btn color="primary" @click="selecionar" v-if="selecionados.length > 0">Selecionar</v-btn>
+                <v-btn color="primary" disabled v-else>Selecionar</v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
+</template>
+
+<script>
+import { mapActions } from 'vuex'
+import { axiosRequest, ${tabela.getNome().toUpperCase()}_LISTAR } from '../../src/utils/UrlRequests'
+import ResponseCodes from '../../src/utils/ResponseCodes'
+export default {
+    model: {
+        prop: 'exibir',
+        event: 'change'
+    },
+    props: {
+        exibir: {
+            type: Boolean,
+            required: true,
+            default: false
+        },
+        multiSelecao: {
+            type: Boolean,
+            required: false,
+            default: false
+        }
+    },
+    data() {
+        return {
+            busca: '',
+            lista: [],
+            selecionados: [],
+            colunas: [
+            	${tabela.getColunasModalVueFront()}
+            ]
+        }
+    },
+    mounted() {
+        this.listar()
+    },
+    methods: {
+        ...mapActions([
+            'exibirProgress',
+            'ocultarProgress',
+            'exibirAlert',
+            'ocultarAlert'
+        ]),
+        async listar() {
+            this.exibirProgress()
+
+            await axiosRequest.post(${tabela.getNome().toUpperCase()}_LISTAR).then(resp => {
+                if (resp.data.codigo === ResponseCodes.SUCESSO) {
+                    this.lista = resp.data.lista
+                } else {
+                    this.exibirAlert(resp.data)
+                }
+            }).catch(error => {
+                this.exibirAlert({ codigo: ResponseCodes.FALHA, error: error.toString() })
+            })
+
+            this.ocultarProgress()
+        },
+        selecionar${tabela.getNome()}(props) {
+            if (this.multiSelecao) {
+                props.selected = props.selected
+            } else {
+                this.selecionados = []
+                this.selecionados.push(props.item)
+            }
+        },
+        selecionarTodos() {
+            if (this.selecionados.length) this.selecionados = []
+            else this.selecionados = this.lista.slice()
+        },
+        cancelar() {
+            this.$emit('change', false)
+        },
+        selecionar() {
+            this.cancelar()
+            this.$emit('selecionar', this.selecionados)
+        },
+        selecionarConfirmar(props) {
+            this.selecionar${tabela.getNome()}(props)
+            this.selecionar()
+        }
+    }
+}
+</script>
+
+<style>
+
+</style>

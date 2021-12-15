@@ -1,0 +1,41 @@
+<template>
+    <v-layout align-center blue darken-3 pl-3 pr-3 pt-4 pb-2 style="max-height: 71px;">
+        <h1 class="white--text display-1 font-weight-thin">{{ titulo }}</h1>
+        <v-btn outline round color="white" align-center @click="novo">
+            <v-icon left dark>add</v-icon>
+            Novo
+        </v-btn>
+
+        <v-flex>
+            <v-layout justify-end pb-2>
+                <v-tooltip bottom>
+                    <v-btn fab dark small outline slot="activator">
+                        <v-icon dark>wb_incandescent</v-icon>
+                    </v-btn>
+                    <span>Ajuda</span>
+                </v-tooltip>
+            </v-layout>
+        </v-flex>
+    </v-layout>
+</template>
+
+<script>
+export default {
+    name: 'Cabecalho',
+    props: {
+        titulo: {
+            type: String,
+            default: 'Título'
+        }
+    },
+    methods: {
+        novo() {
+            this.$emit('novo')
+        }
+    }
+}
+</script>
+
+<style>
+
+</style>

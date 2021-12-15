@@ -1,0 +1,20 @@
+import Vue from 'vue'
+import Router from 'vue-router'
+
+#foreach($modulo in $modulos)
+import ${modulo.getNome()} from '@/components/${modulo.getNome()}'
+#end
+
+Vue.use(Router)
+
+export default new Router({
+    routes: [
+#foreach($modulo in $modulos)
+		{
+            path: '/${modulo.getNomeMinusculo()}',
+            name: '${modulo.getNome()}',
+            component: ${modulo.getNome()}
+        },
+#end
+    ]
+})

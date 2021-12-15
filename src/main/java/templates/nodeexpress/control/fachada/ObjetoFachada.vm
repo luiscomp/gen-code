@@ -1,0 +1,174 @@
+var ${tabela.getNome()}DAO = require("../dao/${tabela.getNome()}DAO");
+#if(${tabela.getCamposImagemInsertUpdate()} != '')
+var Utils = require("../util/utils")
+var Constantes = require("../util/constantes")
+#end
+#if(${tabela.getRecuperarImportRelacionamentos($tabela)} != "")
+${tabela.getRecuperarImportRelacionamentos($tabela)}
+#end
+
+var log4js = require("log4js");
+var logger = log4js.getLogger("logger");
+var { SUCESSO, FALHA } = require("../util/codigoResposta");
+
+/**
+ * Recupera a lista de ${tabela.getNome()} semelhantes ao informado
+ * @param {JSON} ${tabela.getNomeMinusculo()} ${tabela.getNome()} para filtro
+ * @returns {JSON} resposta JSON com a resposta da requisição
+ */
+async function listar(${tabela.getNomeMinusculo()}, pagina = -1) {
+    var resultado;
+    var lista;
+    var quantidade;
+    try {
+        lista = await ${tabela.getNome()}DAO.listar(${tabela.getNomeMinusculo()}, pagina);
+        quantidade = await ${tabela.getNome()}DAO.recuperarQuantidade(${tabela.getNomeMinusculo()}, pagina);
+
+        resultado = {
+            "codigo": SUCESSO,
+            "quantidade": quantidade,
+            "lista": lista
+        }
+    } catch (error) {
+        logger.error(error);
+        resultado = {
+            "codigo": FALHA,
+            "error": error
+        };
+    }
+    return resultado;
+}
+
+/**
+ * Recupera um ${tabela.getNome()} com o id informado
+ * @param {JSON} ${tabela.getNomeMinusculo()} ${tabela.getNome()} com id
+ * @returns {JSON} resposta JSON com a resposta da requisição
+ */
+async function recuperar(id, listasRel = false) {
+    var resultado;
+    try {
+        ${tabela.getNomeMinusculo()} = await ${tabela.getNome()}DAO.recuperar(id);
+        #if(${tabela.getRecuperarRelacionamentos($tabela)} != "")
+        ${tabela.getRecuperarRelacionamentos($tabela)}
+        #end
+        #if(${tabela.getRecuperarRelacionamentosExterno($tabela)} != "")
+        ${tabela.getRecuperarRelacionamentosExterno($tabela)}
+        #end
+        
+        resultado = {
+            "codigo": SUCESSO,
+            "resultado": ${tabela.getNomeMinusculo()}
+        };
+    } catch (error) {
+        logger.error(error);
+        resultado = {
+            "codigo": FALHA,
+            "error": error
+        };
+    }
+    return resultado;
+}
+
+/**
+ * Grava ou Altera - ${tabela.getNome()}
+ *      se (id !== 0) {
+ *          atualiza o ${tabela.getNomeMinusculo()}
+ *      } se nao {
+ *          insere um novo ${tabela.getNomeMinusculo()}
+ *      }
+ * @param {JSON} ${tabela.getNomeMinusculo()} 
+ * @returns {JSON} resposta JSON com a resposta da requisição
+ */
+async function gravar(${tabela.getNomeMinusculo()}) {
+    if(${tabela.getNomeMinusculo()}.id !== undefined && ${tabela.getNomeMinusculo()}.id !== 0) {
+        return alterar(${tabela.getNomeMinusculo()});
+    } else {
+        return inserir(${tabela.getNomeMinusculo()});
+    }
+}
+
+/**
+ * Altera - ${tabela.getNome()}
+ * @param {JSON} ${tabela.getNomeMinusculo()} ${tabela.getNome()} a ser alterado
+ * @returns {JSON} resposta JSON com a resposta da requisição
+ */
+async function alterar(${tabela.getNomeMinusculo()}) {
+    var resultado;
+    try {
+    	${tabela.getCamposImagemInsertUpdate()}
+    	
+        ${tabela.getNomeMinusculo()} = await ${tabela.getNome()}DAO.alterar(${tabela.getNomeMinusculo()});
+
+        resultado = {
+            "codigo": SUCESSO,
+            "mensagem": "${tabela.getNome()} alterado com sucesso.",
+            "resultado": ${tabela.getNomeMinusculo()}
+        }
+    } catch (error) {
+        logger.error(error);
+        resultado = {
+            "codigo": FALHA,
+            "error": error
+        };
+    }
+    return resultado;
+}
+
+/**
+ * Insere - ${tabela.getNome()}
+ * @param {JSON} ${tabela.getNomeMinusculo()} ${tabela.getNome()} a ser inserido
+ * @returns {JSON} resposta JSON com a resposta da requisição
+ */
+async function inserir(${tabela.getNomeMinusculo()}) {
+    var resultado;
+    try {
+    	${tabela.getCamposImagemInsertUpdate()}
+    
+        ${tabela.getNomeMinusculo()} = await ${tabela.getNome()}DAO.inserir(${tabela.getNomeMinusculo()});
+
+        resultado = {
+            "codigo": SUCESSO,
+            "mensagem": "${tabela.getNome()} cadastrado com sucesso.",
+            "resultado": ${tabela.getNomeMinusculo()}
+        }
+    } catch (error) {
+        logger.error(error);
+        resultado = {
+            "codigo": FALHA,
+            "error": error
+        };
+    }
+    return resultado;
+}
+
+/**
+ * Remove - ${tabela.getNome()}
+ * @param {JSON} ${tabela.getNomeMinusculo()} ${tabela.getNome()} a ser removido
+ * @returns {JSON} resposta JSON com a resposta da requisição
+ */
+async function remover(id) {
+    var resultado;
+    try {
+        await ${tabela.getNome()}DAO.remover(id);
+
+        resultado = {
+            "codigo": SUCESSO,
+            "mensagem": "${tabela.getNome()} removido com sucesso."
+        }
+    } catch (error) {
+        logger.error(error);
+        resultado = {
+            "codigo": FALHA,
+            "error": error
+        };
+    }
+    return resultado;
+}
+
+module.exports = 
+{
+    listar,
+    recuperar,
+    gravar,
+    remover
+};

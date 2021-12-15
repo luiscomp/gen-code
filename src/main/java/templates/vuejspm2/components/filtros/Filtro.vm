@@ -1,0 +1,44 @@
+<template>
+    <v-card>
+        <v-layout row wrap align-center pl-3 pr-2>
+        
+        	${tabela.getFiltrosVueFront()}
+            <v-flex>
+                <v-layout justify-end pb-2>
+                    <v-btn color="primary" @click="pesquisar">
+                        <v-icon left dark>search</v-icon>
+                        Pesquisar
+                    </v-btn>
+                </v-layout>
+            </v-flex>
+        </v-layout>
+    </v-card>
+</template>
+
+<script>
+export default {
+    model: {
+        prop: '${tabela.getNomeMinusculo()}',
+        event: 'change'
+    },
+    props: {
+        ${tabela.getNomeMinusculo()}: {}
+    },
+    watch: {
+        ${tabela.getNomeMinusculo()}: {
+            handler: function(val, oldVal) {
+                this.$emit('change', val)
+            },
+            deep: true
+        }
+    },
+    methods: {
+        pesquisar() {
+            this.$emit('pesquisar')
+        }
+    }
+}
+</script>
+
+<style>
+</style>

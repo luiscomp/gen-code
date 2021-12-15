@@ -1,0 +1,94 @@
+<template>
+    <v-dialog v-model="exibir" scrollable persistent width="700">
+        <v-card>
+            <v-card-title v-if="${tabela.getNomeMinusculo()}.id === 0" class="headline grey lighten-3">
+                Novo ${tabela.getNome()}
+            </v-card-title>
+            <v-card-title v-else class="headline grey lighten-3">
+                ${tabela.getNome()}
+            </v-card-title>
+
+            <v-card-text>
+                <v-form ref="cadastro" v-model="validacao.valido" lazy-validation>
+                    <v-container fluid grid-list-md>
+#if(${tabela.getCamposCadastroImagemVueFront()} != '')
+                    	${tabela.getCamposCadastroImagemVueFront()}
+#end
+#if(${tabela.getCamposCadastroFrontVue()} != '')
+                    	${tabela.getCamposCadastroFrontVue()}
+#end
+#if(${tabela.getCamposCadastroRelacionamentoVueFront()} != '')
+                    	${tabela.getCamposCadastroRelacionamentoVueFront()}
+#end
+                    </v-container>
+                </v-form>
+            </v-card-text>
+
+#if(${tabela.getModalCadastroRelacionamentoVueFront()} != '')
+			${tabela.getModalCadastroRelacionamentoVueFront()}
+#end
+            <v-divider></v-divider>
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn @click="cancelar">Cancelar</v-btn>
+                <v-btn color="error" @click="remover" v-if="${tabela.getNomeMinusculo()}.id !== 0">Remover</v-btn>
+                <v-btn color="primary" @click="gravar">Gravar</v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
+</template>
+
+<script>
+${tabela.getImportsCadastroVueFront()}
+export default {
+    components: {
+    	${tabela.getAddComponentCadastroVueFront()}
+    },
+    model: {
+        prop: 'exibir',
+        event: 'change'
+    },
+    props: {
+        exibir: {
+            required: true,
+            type: Boolean,
+            default: false
+        },
+        ${tabela.getNomeMinusculo()}: {
+            required: true,
+            default: {
+                id: 0,
+#if(${tabela.getRecuperarColunasDecimaisVueFront()} != "")
+				${tabela.getRecuperarColunasDecimaisVueFront()}
+#end
+#if(${tabela.getRecuperarRelacionamentosVueFront()} != "")
+				${tabela.getRecuperarRelacionamentosVueFront()}
+#end
+            }
+        }
+    },
+    data() {
+        return {
+        	${tabela.getModalDataCadastroVueFront()}
+        	${tabela.getValidadorCadastroVueFront()}
+        }
+    },
+    methods: {
+        cancelar() {
+            this.$emit('change', false)
+        },
+        remover() {
+            this.$emit('remover', this.${tabela.getNomeMinusculo()})
+        },
+        gravar() {
+            if (this.$refs.cadastro.validate()) {
+                this.$emit('gravar', this.${tabela.getNomeMinusculo()})
+            }
+        }
+    }
+}
+</script>
+
+<style>
+
+</style>

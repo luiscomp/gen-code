@@ -1,0 +1,74 @@
+import Vue from 'vue'
+import Vuex from 'vuex'
+
+import Constantes from '../utils/Constantes'
+import ResponseCodes from '../utils/ResponseCodes'
+
+#foreach($modulo in $modulos)
+import ${modulo.getNomeMinusculo()} from './modules/${modulo.getNomeMinusculo()}'
+#end
+
+Vue.use(Vuex)
+
+export default new Vuex.Store({
+    modules: {
+#foreach($modulo in $modulos)
+		${modulo.getNomeMinusculo()},
+#end
+    },
+    state: {
+        snackbar: {
+            open: false,
+            timeout: 6000,
+            text: '',
+            color: null
+        },
+        progress: {
+            open: false,
+            text: 'Buscando ...'
+        },
+        itensPorPagina: Constantes.MAX_PAGE_LENGTH
+    },
+    mutations: {
+        EXIBIR_PROGRESS(state, text = 'Buscando ...') {
+            state.progress.text = text
+            state.progress.open = true
+        },
+
+        OCULTAR_PROGRESS(state) {
+            state.progress.open = false
+        },
+
+        EXIBIR_ALERT(state, payload) {
+            if (payload.codigo === ResponseCodes.SUCESSO) {
+                state.snackbar.color = 'success'
+                state.snackbar.text = payload.mensagem
+            } else {
+                state.snackbar.color = 'error'
+                state.snackbar.text = payload.error
+            }
+            state.snackbar.open = true
+        },
+
+        OCULTAR_ALERT(state) {
+            state.snackbar.open = false
+        }
+    },
+    actions: {
+        exibirProgress({ commit }, text = 'Buscando ...') {
+            commit('EXIBIR_PROGRESS', text)
+        },
+        ocultarProgress({ commit }) {
+            commit('OCULTAR_PROGRESS')
+        },
+        exibirAlert({ commit }, data) {
+            commit('EXIBIR_ALERT', data)
+        },
+        ocultarAlert({ commit }) {
+            commit('OCULTAR_ALERT')
+        }
+    },
+    getters: {
+        progress: state => state.progress
+    }
+})

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<preferences>
+    <projetos>
+        <projeto>
+            <hostDB>localhost</hostDB>
+            <nome>AdMed</nome>
+            <plataforma>NODE_VUE_PM2</plataforma>
+            <portaDB>3306</portaDB>
+            <schemaDB>admed</schemaDB>
+            <senhaDB>local!@#dev</senhaDB>
+            <servidorDB>jdbc:mysql://localhost:3306/admed</servidorDB>
+            <urlBaseArquivos>C:\\xampp\\htdocs\\admed\\</urlBaseArquivos>
+            <urlValidarAcesso>/usuario/login</urlValidarAcesso>
+            <usuarioDB>root</usuarioDB>
+        </projeto>
+        <projeto>
+            <hostDB>localhost</hostDB>
+            <nome>SeuBarbeiro</nome>
+            <plataforma>NODE_VUE_PM2</plataforma>
+            <portaDB>3306</portaDB>
+            <schemaDB>seubarbeiro</schemaDB>
+            <senhaDB>local!@#dev</senhaDB>
+            <servidorDB>jdbc:mysql://localhost:3306/seubarbeiro</servidorDB>
+            <urlBaseArquivos>C:\\xampp\\htdocs\\seubarbeiro\\</urlBaseArquivos>
+            <urlValidarAcesso>/usuario/login</urlValidarAcesso>
+            <usuarioDB>root</usuarioDB>
+        </projeto>
+        <projeto>
+            <hostDB>localhost</hostDB>
+            <nome>eatgo</nome>
+            <plataforma>NODE_VUE_PM2</plataforma>
+            <portaDB>3306</portaDB>
+            <schemaDB>eatgo</schemaDB>
+            <senhaDB>local!@#dev</senhaDB>
+            <servidorDB>jdbc:mysql://localhost:3306/eatgo</servidorDB>
+            <urlBaseArquivos>/var/www/eatgo/arquivos</urlBaseArquivos>
+            <urlValidarAcesso>/usuario/login</urlValidarAcesso>
+            <usuarioDB>root</usuarioDB>
+        </projeto>
+    </projetos>
+</preferences>

@@ -1,0 +1,67 @@
+<template>
+    <v-dialog
+        v-model="exibir" max-width="290" persistent>
+        <v-card>
+            <v-card-title class="headline">{{ titulo }}</v-card-title>
+            <v-card-text>
+                {{ mensagem }}
+            </v-card-text>
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="red darken-1" flat="flat" @click="cancelar">
+                    {{ nao }}
+                </v-btn>
+                <v-btn color="green darken-1" flat="flat" @click="confirmar">
+                    {{ sim }}
+                </v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
+</template>
+
+<script>
+export default {
+    name: 'MessageDialog',
+    model: {
+        prop: 'exibir',
+        event: 'change'
+    },
+    props: {
+        titulo: {
+            required: true,
+            type: String,
+            default: 'Título'
+        },
+        mensagem: {
+            required: true,
+            type: String,
+            default: 'Mensagem'
+        },
+        sim: {
+            type: String,
+            default: 'Sim'
+        },
+        nao: {
+            type: String,
+            default: 'Não'
+        },
+        exibir: {
+            required: true,
+            type: Boolean,
+            default: false
+        }
+    },
+    methods: {
+        cancelar() {
+            this.$emit('change', false)
+        },
+        confirmar() {
+            this.cancelar()
+            this.$emit('confirmar')
+        }
+    }
+}
+</script>
+
+<style>
+</style>

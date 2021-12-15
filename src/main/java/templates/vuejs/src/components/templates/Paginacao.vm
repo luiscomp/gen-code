@@ -1,0 +1,58 @@
+<template>
+    <v-flex v-if="totalItens > totalPorPagina">
+        <v-layout row wrap align-center>
+            <v-flex md6>
+                <div class="text-md-start">
+                    <h4>Total na Página: {{ totalNaPagina }}</h4>
+                </div>
+            </v-flex>
+            <v-flex md6>
+                <div class="text-xs-right">
+                    <v-pagination :value="pagina" :length="totalPaginas" :total-visible="5" @input="selecionarPagina"></v-pagination>
+                </div>
+            </v-flex>
+        </v-layout>
+    </v-flex>
+</template>
+
+<script>
+import Constantes from '../../utils/Constantes'
+export default {
+    name: 'Paginacao',
+    model: {
+        prop: 'pagina',
+        event: 'change'
+    },
+    props: {
+        pagina: {
+            required: true,
+            type: Number,
+            default: 1
+        },
+        totalItens: {
+            required: true,
+            type: Number
+        },
+        totalNaPagina: {
+            required: true,
+            type: Number
+        }
+    },
+    computed: {
+        totalPorPagina() {
+            return Constantes.MAX_PAGE_LENGTH
+        },
+        totalPaginas() {
+            return Math.ceil(this.totalItens / this.totalPorPagina)
+        }
+    },
+    methods: {
+        selecionarPagina(pagina) {
+            this.$emit('change', pagina)
+        }
+    }
+}
+</script>
+
+<style>
+</style>

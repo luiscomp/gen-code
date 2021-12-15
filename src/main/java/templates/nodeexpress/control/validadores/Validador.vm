@@ -1,0 +1,23 @@
+var Ajv = require('ajv');
+var ajv = new Ajv({allErrors: true, jsonPointers: true});
+require('ajv-errors')(ajv /*, {singleError: true} */);
+
+function validator(schema) {
+    return function(req, res, next) {
+        var validate = ajv.compile(schema)
+        var isValid = validate(req.body);
+
+        if(isValid) {
+            next();
+        } else {
+            res.json({
+                "codigo": 100,
+                "resultado": validate.errors.map(error => {
+                    return error.message;
+                })
+            })
+        }
+    }
+}
+ 
+module.exports = validator;

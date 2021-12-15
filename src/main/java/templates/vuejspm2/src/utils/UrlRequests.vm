@@ -1,0 +1,24 @@
+import Vue from 'vue'
+import axios from 'axios'
+import VueAxios from 'vue-axios'
+
+Vue.use(VueAxios, axios)
+
+const URL_BASE = 'http://localhost:3000/'
+
+export const axiosRequest = axios.create({
+    baseURL: URL_BASE,
+    timeout: 30000,
+    maxContentLength: 5242880,
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    }
+})
+#foreach($modulo in $modulos)
+
+export const ${modulo.getNome().toUpperCase()}_LISTAR = URL_BASE.concat('${modulo.getNomeMinusculo()}/listar/')
+export const ${modulo.getNome().toUpperCase()}_RECUPERAR = URL_BASE.concat('${modulo.getNomeMinusculo()}/recuperar/')
+export const ${modulo.getNome().toUpperCase()}_GRAVAR = URL_BASE.concat('${modulo.getNomeMinusculo()}/gravar/')
+export const ${modulo.getNome().toUpperCase()}_REMOVER = URL_BASE.concat('${modulo.getNomeMinusculo()}/remover/')
+#end

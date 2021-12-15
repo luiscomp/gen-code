@@ -1,0 +1,8 @@
+{
+  "/": {
+    "title": "${nomeProjeto}",
+    "description": "${nomeProjeto}",
+    "keywords": "${nomeProjeto}"
+  },
+  ${interpretador.getMetaRouterJson($modulos)}
+}

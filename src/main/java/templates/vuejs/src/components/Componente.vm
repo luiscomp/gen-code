@@ -1,0 +1,265 @@
+<template>
+    <v-flex>
+        <!-- CABEÇALHO -->
+        <Cabecalho titulo="${tabela.getNome()}" @novo="novo"></Cabecalho>
+
+        <!-- FILTRO -->
+        <v-flex ma-3>
+            <${tabela.getNome()}Filtro v-model="${tabela.getNomeMinusculo()}Pesquisa" @pesquisar="pesquisar"/>
+        </v-flex>
+
+        <v-flex ma-3>
+            <v-card>
+                <v-layout row wrap pa-3>
+                    <!-- PAGINAÇÃO SUPERIOR -->
+                    <Paginacao v-model="pagina" :totalItens="tabela.totalItens" :totalNaPagina="tabela.lista.length"></Paginacao>
+
+                    <!-- TABELA -->
+                    <v-flex xs12 sm12 md12 mt-3 mb-3>
+                        <v-data-table
+                            :headers="tabela.colunas"
+                            :items="tabela.lista"
+                            :rows-per-page-items="[itensPorPagina]"
+                            no-data-text="Sem dados"
+                            v-model="tabela.selecionados"
+                            hide-actions
+                            select-all
+                            class="elevation-1">
+
+                            <template slot="headerCell" slot-scope="props">
+                                <v-tooltip bottom>
+                                    <span slot="activator">
+                                        {{ props.header.text }}
+                                    </span>
+                                    <span>
+                                        {{ props.header.text }}
+                                    </span>
+                                </v-tooltip>
+                            </template>
+
+                            <template slot="items" slot-scope="props">
+                                <tr @dblclick="recuperar(props.item)">
+                                    <td style="width: 80px;">
+                                        <v-checkbox v-model="props.selected" primary hide-details></v-checkbox>
+                                    </td>
+
+									${tabela.getColunasTabelaHtmlVueFront()}
+
+                                    <td class="justify-end layout pa-2">
+                                        <template>
+                                            <div class="text-xs-center pt-1">
+                                                <v-menu transition="slide-y-transition">
+                                                    <v-icon slot="activator">
+                                                        more_vert
+                                                    </v-icon>
+
+                                                    <v-list>
+                                                        <v-list-tile @click="recuperar(props.item)">
+                                                            <v-list-tile-title>Alterar</v-list-tile-title>
+                                                        </v-list-tile>
+                                                        <v-list-tile @click="confirmarRemover(props.item)">
+                                                            <v-list-tile-title>Remover</v-list-tile-title>
+                                                        </v-list-tile>
+                                                    </v-list>
+                                                </v-menu>
+                                            </div>
+                                        </template>
+                                    </td>
+                                </tr>
+                            </template>
+                        </v-data-table>
+                    </v-flex>
+
+                    <!-- PAGINAÇÃO INFERIOR -->
+                    <Paginacao v-model="pagina" :totalItens="tabela.totalItens" :totalNaPagina="tabela.lista.length"></Paginacao>
+                </v-layout>
+            </v-card>
+        </v-flex>
+
+        <!-- MODAL CADASTRO -->
+        <${tabela.getNome()}Cadastro v-model="dialogCadastro.exibir" :${tabela.getNomeMinusculo()}="${tabela.getNomeMinusculo()}" @remover="confirmarRemover" @gravar="gravar"></${tabela.getNome()}Cadastro>
+
+        <!-- MESSAGE DIALOG -->
+        <MessageDialog v-model="dialogRemover.exibir" titulo="Remover" mensagem="Deseja realmente remover?" @confirmar="remover"></MessageDialog>
+    </v-flex>
+</template>
+
+<script>
+import { mapState, mapGetters, mapActions } from 'vuex'
+import { axiosRequest, ${tabela.getNome().toUpperCase()}_LISTAR, ${tabela.getNome().toUpperCase()}_GRAVAR, ${tabela.getNome().toUpperCase()}_RECUPERAR, ${tabela.getNome().toUpperCase()}_REMOVER } from '../utils/UrlRequests'
+import ResponseCodes from '../utils/ResponseCodes'
+import Constantes from '../utils/Constantes'
+
+import Cabecalho from './templates/Cabecalho'
+import ${tabela.getNome()}Filtro from "./filtros/${tabela.getNome()}Filtro"
+import ${tabela.getNome()}Cadastro from "./cadastros/${tabela.getNome()}Cadastro"
+import MessageDialog from './templates/MessageDialog'
+import Paginacao from './templates/Paginacao'
+
+export default {
+    components: {
+        Cabecalho,
+        ${tabela.getNome()}Filtro,
+        ${tabela.getNome()}Cadastro,
+        MessageDialog,
+        Paginacao
+    },
+    data() {
+        return {
+            ${tabela.getNomeMinusculo()}: {
+                id: 0,
+#if(${tabela.getRecuperarRelacionamentosVueFront()} != "")
+				${tabela.getRecuperarRelacionamentosVueFront()}
+#end
+            },
+            ${tabela.getNomeMinusculo()}Pesquisa: {},
+            pagina: 1,
+            tabela: {
+                colunas: [
+                	${tabela.getColunasTabelaVueFront()}
+                    { text: 'Ações', value: 'null', sortable: false, align: 'right', width: '80px' }
+                ],
+                lista: [],
+                totalItens: 0,
+                selecionados: []
+            },
+            dialogRemover: {
+                exibir: false
+            },
+            dialogCadastro: {
+                exibir: false
+            }
+        }
+    },
+    mounted() {
+        this.listar()
+    },
+    computed: {
+        ...mapState({
+            // MAPEIA DADOS DO ESTADO GLOBAL PARA O COMPONENTE
+        }),
+        ...mapGetters([
+            // MAPEIA GETTERS DO STORE PARA O COMPONENTE
+        ]),
+        itensPorPagina() {
+            return Constantes.MAX_PAGE_LENGTH
+        },
+        totalPaginas() {
+            return Math.ceil(this.tabela.totalItens / this.itensPorPagina)
+        }
+    },
+    watch: {
+        pagina: {
+            handler: function(value, oldValue) {
+                this.listar()
+            },
+            deep: true
+        }
+    },
+    methods: {
+        ...mapActions([
+            'exibirProgress',
+            'ocultarProgress',
+            'exibirAlert',
+            'ocultarAlert'
+        ]),
+
+        confirmarRemover(${tabela.getNomeMinusculo()}) {
+            this.${tabela.getNomeMinusculo()} = { 
+            	...${tabela.getNomeMinusculo()}, 
+#if(${tabela.getRecuperarRelacionamentosVueFront()} != "")
+				${tabela.getRecuperarRelacionamentosVueFront()}
+#end
+        	}
+            this.dialogRemover.exibir = true
+        },
+
+        novo() {
+            this.${tabela.getNomeMinusculo()} = {
+                id: 0,
+#if(${tabela.getRecuperarColunasDecimaisVueFront()} != "")
+				${tabela.getRecuperarColunasDecimaisVueFront()}
+#end
+#if(${tabela.getRecuperarRelacionamentosVueFront()} != "")
+				${tabela.getRecuperarRelacionamentosVueFront()}
+#end
+            }
+            this.dialogCadastro.exibir = true
+        },
+
+        pesquisar() {
+            this.pagina = 1
+            this.listar()
+        },
+
+        async listar() {
+            this.exibirProgress()
+
+            await axiosRequest.post(${tabela.getNome().toUpperCase()}_LISTAR.concat(this.pagina - 1), this.${tabela.getNomeMinusculo()}Pesquisa).then(resp => {
+                if (resp.data.codigo === ResponseCodes.SUCESSO) {
+                    this.tabela.lista = resp.data.lista
+                    this.tabela.totalItens = resp.data.quantidade
+                } else {
+                    this.exibirAlert(resp.data)
+                }
+            }).catch(error => {
+                this.exibirAlert({ codigo: ResponseCodes.FALHA, error: error.toString() })
+            })
+
+            this.ocultarProgress()
+        },
+
+        async recuperar(${tabela.getNomeMinusculo()}) {
+            this.exibirProgress('Recuperando ...')
+
+            await axiosRequest.post(${tabela.getNome().toUpperCase()}_RECUPERAR, ${tabela.getNomeMinusculo()}).then(resp => {
+                if (resp.data.codigo === ResponseCodes.SUCESSO) {
+                    this.${tabela.getNomeMinusculo()} = resp.data.resultado
+#if(${tabela.getColunasImagemVueFrontComponent()} != '')
+					${tabela.getColunasImagemVueFrontComponent()}
+#end
+
+                    this.dialogCadastro.exibir = true
+                } else {
+                    this.exibirAlert(resp.data)
+                }
+            }).catch(error => {
+                this.exibirAlert({ codigo: ResponseCodes.FALHA, error: error.toString() })
+            })
+
+            this.ocultarProgress()
+        },
+
+        async gravar(${tabela.getNomeMinusculo()}) {
+            this.exibirProgress('Gravando ...')
+
+            await axiosRequest.post(${tabela.getNome().toUpperCase()}_GRAVAR, ${tabela.getNomeMinusculo()}).then(resp => {
+                this.exibirAlert(resp.data)
+                this.dialogCadastro.exibir = false
+                this.listar()
+            }).catch(error => {
+                this.exibirAlert({ codigo: ResponseCodes.FALHA, error: error.toString() })
+            })
+
+            this.ocultarProgress()
+        },
+
+        async remover() {
+            this.exibirProgress('Removendo ...')
+
+            await axiosRequest.post(${tabela.getNome().toUpperCase()}_REMOVER, this.${tabela.getNomeMinusculo()}).then(resp => {
+                this.exibirAlert(resp.data)
+                this.dialogCadastro.exibir = false
+                this.listar()
+            }).catch(error => {
+                this.exibirAlert({ codigo: ResponseCodes.FALHA, error: error.toString() })
+            })
+
+            this.ocultarProgress()
+        }
+    }
+}
+</script>
+
+<style>
+</style>

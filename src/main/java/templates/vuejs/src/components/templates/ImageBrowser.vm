@@ -1,0 +1,67 @@
+<template>
+    <v-card flat tile class="d-flex">
+        <v-layout @mouseover="exibirSelecionarImagem = true" @mouseout="exibirSelecionarImagem = false">
+            <v-img
+                @click="fileBrowser"
+                :src="imagem"
+                :aspect-ratio="aspectRatio"
+                class="grey lighten-2">
+                <v-expand-transition>
+                    <div v-if="exibirSelecionarImagem" class="transition-fast-in-fast-out grey darken-2 v-img--reveal white--text" style="height: 25%;">
+                        <v-layout fill-height align-center justify-center ma-0 class="text-md-justify caption">
+                            <p class="text-xs-center" style="margin-bottom: 0px">Clique para alterar</p>
+                        </v-layout>
+                    </div>
+                </v-expand-transition>
+            </v-img>
+        </v-layout>
+        <input type="file" style="display: none" ref="image" accept="image/*" @change="onFileSelected">
+    </v-card>
+</template>
+
+<script>
+export default {
+    name: 'ImageBrowser',
+    model: {
+        prop: 'imagem',
+        event: 'change'
+    },
+    props: {
+        imagem: {
+            type: String,
+            required: true,
+            default: require('../../assets/photo.svg')
+        },
+        aspectRatio: {
+            type: Number,
+            default: 1
+        }
+    },
+    data() {
+        return {
+            exibirSelecionarImagem: false
+        }
+    },
+    methods: {
+        fileBrowser() {
+            this.$refs.image.click()
+        },
+
+        onFileSelected(e) {
+            const files = e.target.files
+            if (files[0] !== undefined) {
+                const fr = new FileReader()
+                fr.readAsDataURL(files[0])
+                fr.addEventListener('load', () => {
+                    this.$emit('change', fr.result)
+                })
+            } else {
+                this.$emit('change', '')
+            }
+        }
+    }
+}
+</script>
+
+<style>
+</style>

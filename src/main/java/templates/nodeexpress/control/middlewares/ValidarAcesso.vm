@@ -1,0 +1,12 @@
+var { SESSAO_EXPIRADA } = require("../util/codigoResposta");
+
+module.exports = (req, res, next) => {
+    if(req.session.isPopulated || req.url === "${urlValidarSessao}") {
+        next();
+    } else {
+        res.json({
+            "codigo": SESSAO_EXPIRADA,
+            "error": "Sessão expirada ou inexistente"
+        })
+    }
+}

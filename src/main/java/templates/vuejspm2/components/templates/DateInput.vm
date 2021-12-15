@@ -1,0 +1,84 @@
+<template>
+    <v-menu
+        :close-on-content-click="false"
+        v-model="menu"
+        :nudge-right="40"
+        lazy
+        transition="scale-transition"
+        offset-y
+        full-width
+        min-width="290px">
+        <v-text-field
+            slot="activator"
+            v-model="dataFormatada"
+            mask="${interpretador.getDateMask()}"
+            required
+            :rules="rules"
+            :label="label"
+            @change="parseDate"></v-text-field>
+        <v-date-picker :value="data" @input="atualizarData" locale="pt-BR"></v-date-picker>
+    </v-menu>
+</template>
+
+<script>
+export default {
+    model: {
+        prop: 'data',
+        event: 'input'
+    },
+    props: {
+        data: {
+            required: true,
+            default: new Date().toISOString().substr(0, 10)
+        },
+        rules: {
+            required: false
+        },
+        label: {
+            required: false,
+            type: String,
+            default: 'Data'
+        }
+    },
+    data() {
+        return {
+            menu: false,
+            dataFormatada: null
+        }
+    },
+    watch: {
+        data(val) {
+            this.dataFormatada = this.getDataString(val)
+        }
+    },
+    methods: {
+        atualizarData(value) {
+            this.menu = false
+            this.dataFormatada = this.getDataString(value)
+            this.$emit('input', value)
+        },
+        getDataString(value) {
+            var data = new Date(value)
+            return new Date(data.getUTCFullYear(), data.getUTCMonth(), data.getUTCDate()).toLocaleDateString('pt-BR')
+        },
+        parseDate() {
+            let dataExtraida = ${interpretador.getDateInputParseDate()}
+            
+            if (!this.isValidDate(new Date(dataExtraida))) {
+                this.dataFormatada = ''
+                this.$emit('input', null)
+            } else {
+                const [dia, mes, ano] = dataExtraida.split('/')
+                this.$emit('input', ${interpretador.getDataFormatada()})
+            }
+        },
+        isValidDate(d) {
+            return d instanceof Date && !isNaN(d)
+        }
+    }
+}
+</script>
+
+<style>
+
+</style>

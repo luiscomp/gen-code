@@ -1,0 +1,245 @@
+var util = require('util');
+var mysql = require("mysql");
+
+/** Configuração do pool de conexão com o banco de dados. */
+var poolDeConexao = mysql.createPool({
+    host                : "${hostDB}",
+    port                : "${portaDB}",
+    user                : "${usuarioDB}",
+    password            : "${senhaDB}",
+    database            : "${schemaDB}",
+    connectionLimit     : 5,
+    multipleStatements  : true
+});
+
+poolDeConexao.getConnection((error, connection) => {
+    if(error) {
+        if(error.code === 'PROTOCOL_CONNECTION_LOST') {
+            console.error('Database connection was closed.');
+        }
+        if(error.code === 'ER_CON_COUNT_ERROR') {
+            console.error('Database has too many connections.');
+        }
+        if(error.code === 'ECONNREFUSED') {
+            console.error('Database connection was refused.');
+        }
+    }
+    if(connection) connection.release();
+    return;
+})
+poolDeConexao.query = util.promisify(poolDeConexao.query);
+/** FIM DA CONFIGURAÇÃO */
+
+/**
+ * Insere uma clausula de condição AND no formato "AND ( <clausula> )" na SqlQuery
+ * @param {String} sqlQuery SqlQuery a ser inserida a clausula
+ * @param {String} clausula Clausula da condição a ser inserida na SqlQuery
+ * @returns {String} SqlQuery com o clausula inserida
+ */
+function incluirClausulaNoWhereAND(sqlQuery, clausula) {
+    if(sqlQuery.toUpperCase().lastIndexOf("WHERE") > sqlQuery.toUpperCase().lastIndexOf("FROM")) {
+        sqlQuery = sqlQuery.concat(" AND (", clausula, " ) ");
+    } else {
+        sqlQuery = sqlQuery.concat(" WHERE (", clausula, ") ");
+    }
+    return sqlQuery;
+}
+
+/**
+ * Insere uma clausula de condição OR no formato "OR ( <clausula> )" na SqlQuery
+ * @param {String} sqlQuery SqlQuery a ser inserida a clausula
+ * @param {String} clausula Clausula da condição a ser inserida no SQL
+ * @returns {String} SqlQuery com o clausula inserida
+ */
+function incluirClausulaNoWhereOR(sqlQuery, clausula) {
+    if(sqlQuery.toUpperCase().lastIndexOf("WHERE") > sqlQuery.toUpperCase().lastIndexOf("FROM")) {
+        sqlQuery = sqlQuery.concat(" OR (", clausula, " ) ");
+    } else {
+        sqlQuery = sqlQuery.concat(" WHERE (", clausula, ") ");
+    }
+    return sql;
+}
+
+/**
+ * Retorna os parametros de um objeto para preencher a query
+ * @param {JSON} obj Objeto para montar os parametros
+ * @param {Boolean} forUpdate Se for para uma query de UPDATE, colocar true para que o ID seja incluido no ultimo index dos parametros
+ * @returns {Array} parametros do objeto
+ */
+function pegarParametrosDoSqlInsert(obj, properties) {
+    var parametros = Object.keys(obj).map(attr => {
+        if(attr !== "id") {
+            let contem = false;
+            Object.keys(properties).map(attrp => {
+                if(attr === attrp) {
+                    contem = true;
+                }
+            });
+            if(contem) {
+                return obj[attr];
+            }
+        }
+    });
+    return parametros.filter((value) => {
+        if (value !== undefined) {
+            return value === 0 ? '0' : value
+        }
+    });
+}
+
+/**
+ * Retorna os parametros de um objeto para preencher a query
+ * @param {JSON} obj Objeto para montar os parametros
+ * @param {Boolean} forUpdate Se for para uma query de UPDATE, colocar true para que o ID seja incluido no ultimo index dos parametros
+ * @returns {Array} parametros do objeto
+ */
+function pegarParametrosDoSqlUpdate(obj, properties) {
+    var indexId = 0;
+    var index = 0;
+    var parametros = Object.keys(obj).map(attr => {
+        if(attr === "id") {
+            indexId = index;
+        }
+
+        let contem = false;
+        Object.keys(properties).map(attrp => {
+            if(attr === attrp) {
+                contem = true;
+            }
+        });
+        if(contem) {
+            index++;
+            return obj[attr];
+        }
+    });
+
+    parametros = trocarPosicao(parametros, indexId, index - 1);
+
+    return parametros;
+}
+
+/**
+ * Troca a posição de um item dentro do array de acordo com os index passados
+ * @param {Array} arr Array para aplicar mudança de posição
+ * @param {Integer} old_index Indice da posição atual
+ * @param {Integer} new_index Indice da nova posição
+ * @returns {Array} Novo array com o item reposicionado
+ */
+function trocarPosicao(arr, old_index, new_index) {
+    if (new_index >= arr.length) {
+        var k = new_index - arr.length + 1;
+        while (k--) {
+            arr.push(undefined);
+        }
+    }
+    arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
+    return arr;
+};
+
+/**
+ * Monta o insert de um objeto na tabela informada
+ * @param {JSON} obj Objeto a ser inserido
+ * @param {String} nomeTabela Tabela que será inserida
+ * @returns {String} Query INSERT do Objeto
+ */
+function montarInsertObjeto(obj, properties, nomeTabela) {
+    var insert = "INSERT INTO ".concat(nomeTabela).concat(" ( ");
+
+    Object.keys(obj).map(attr => {
+        if(attr !== "id") {
+            let contem = false;
+            Object.keys(properties).map(attrp => {
+                if(attr === attrp) {
+                    contem = true;
+                }
+            });
+            if(contem) {
+                insert = insert.concat(attr).concat(" , ");
+                contem = false;
+            }
+        }
+    });
+
+    insert = insert.substring(0, insert.lastIndexOf(","));
+    insert = insert.concat(" ) VALUES (");
+
+    Object.keys(obj).map(attr => {
+        if(attr !== "id") {
+            let contem = false;
+            Object.keys(properties).map(attrp => {
+                if(attr === attrp) {
+                    contem = true;
+                }
+            });
+            if(contem) {
+                insert = insert.concat(" ? ,");
+                contem = false;
+            }
+        }
+    });
+
+    insert = insert.substring(0, insert.lastIndexOf(","));
+    insert = insert.concat(")");
+
+    return insert;
+}
+
+/**
+ * Monta o update de um objeto na tabela informada
+ * @param {JSON} obj Objeto a ser atualizado
+ * @param {String} nomeTabela Tabela onde será atualizado
+ * @returns {String} Query UPDATE do Objeto
+ */
+function montarUpdateWhereIdObjeto(obj, properties, nomeTabela) {
+    var update = "UPDATE ".concat(nomeTabela).concat(" SET ");
+
+    Object.keys(obj).map(attr => {
+        if(attr !== "id") {
+            let contem = false;
+            Object.keys(properties).map(attrp => {
+                if(attr === attrp) {
+                    contem = true;
+                }
+            });
+            if(contem) {
+                update = update.concat(attr).concat(" = ? , ");
+                contem = false;
+            }
+        }
+    });
+    update = update.substring(0, update.lastIndexOf(","));
+
+    update = update.concat(" WHERE id = ? ");
+
+    return update;
+}
+
+/**
+ * Monta o select de um objeto na tabela informada
+ * @param {JSON} properties Propriedades a ser criado select
+ * @param {String} tableName Nome da tabela a ser feito o select
+ * @returns {String} Query SELECT do Objeto
+ */
+function montarSelectFromSchema(properties, tableName) {
+    var select = "SELECT ";
+    Object.keys(properties).map(attr => {
+        select = select.concat(`${tableName}.${attr}, `);
+    });
+    select = select.substring(0, select.lastIndexOf(","));
+
+    select = select.concat(` FROM ${tableName}`);
+
+    return select;
+}
+
+module.exports =
+{
+    poolDeConexao,
+    incluirClausulaNoWhereAND,
+    incluirClausulaNoWhereOR,
+    pegarParametrosDoSqlInsert,
+    pegarParametrosDoSqlUpdate,
+    montarInsertObjeto,
+    montarUpdateWhereIdObjeto,
+    montarSelectFromSchema
+};
